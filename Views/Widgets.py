@@ -20,7 +20,6 @@ class TabWidget(QTabWidget):
         self.setAutoFillBackground(True)
         self.setTabBar(QTabBar())
         self.list_views = []
-        color_map = {}
         for i in range(len(colors)):
             list = QListWidget(self)
             list.setSelectionMode(QAbstractItemView.ExtendedSelection)
@@ -39,11 +38,8 @@ class TabWidget(QTabWidget):
                 list.addItem(item)
             self.addTab(list, str(i))
             list.setAutoFillBackground(True)
-            print(colors[i])
-            if i not in color_map.keys():
-                #todo map real colors to color indicies
-                pass
-            color = tuple(int(COLOR_INDEX[color_indexes.pop()][i:i + 2], 16) for i in (2, 4, 6))
+            print(i)
+            color = tuple(int(COLOR_INDEX[color_indexes[i]][j:j + 2], 16) for j in (2, 4, 6))
             
             list.setStyleSheet("QWidget {{background-color: rgb{0};}}".format(color))
             # palette = list.palette()

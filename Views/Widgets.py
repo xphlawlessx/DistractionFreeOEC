@@ -43,6 +43,7 @@ class TabWidget(QTabWidget):
             color = tuple(int(COLOR_INDEX[color_indexes[i]][j:j + 2], 16) for j in (2, 4, 6))
 
             list.setStyleSheet("QWidget {{background-color: rgb{0};}}".format(color))
+            # todo load any completed rows 
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key_Plus:
@@ -106,7 +107,8 @@ class TabWidget(QTabWidget):
             results.extend([
                 (i, row.data()) for row in
                 lv.selectionModel().selectedRows()])
-        self.owner.completed_comments[self.owner.comment_question_label.label.text()] = results
+        if results:
+            self.owner.completed_comments[self.owner.comment_question_label.label.text()] = results
 
 
 # class for scrollable label

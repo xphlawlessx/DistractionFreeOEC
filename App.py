@@ -31,6 +31,7 @@ class MainView(QDialog):
         bot_menu.addWidget(font_btn)
         bot_menu.addWidget(open_btn)
         bot_menu.addWidget(save_btn)
+        # todo add number label
 
         self.setLayout(self.layout)
         gb.setLayout(bot_menu)
@@ -73,16 +74,16 @@ class MainView(QDialog):
         self.next_comment()
 
     def make_buttons(self):
-        font_btn = QPushButton()
-        save_btn = QPushButton()
-        open_btn = QPushButton()
+        font_btn = QPushButton('font')
+        save_btn = QPushButton('save')
+        open_btn = QPushButton('open')
 
         font_btn.setMaximumSize(100, 50)
-        font_btn.setIcon(QIcon('images/font.png'))
+        # font_btn.setIcon(QIcon('images/font.png'))
         save_btn.setMaximumSize(100, 50)
-        save_btn.setIcon(QIcon('images/save.png'))
+        # save_btn.setIcon(QIcon('images/save.png'))
         open_btn.setMaximumSize(100, 50)
-        open_btn.setIcon(QIcon('images/open.png'))
+        # open_btn.setIcon(QIcon('images/open.png'))
 
         font_btn.clicked.connect(self.on_click_font)
         save_btn.clicked.connect(self.on_click_save)

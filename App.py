@@ -40,8 +40,21 @@ class MainView(QDialog):
         self.comment_question_label.setText(
             self.parser.question if self.question_shown else self.parser.get_current_comment())
 
+    def check_comment(self):
+        if self.parser.get_current_comment() in self.completed_comments.keys():
+            for x in self.completed_comments[self.parser.get_current_comment()]:
+                print(x)
+                # Todo show row data with self.tabs
+
     def next_comment(self):
         self.parser.next_comment()
+        self.check_comment()
+        if not self.question_shown:
+            self.comment_question_label.setText(self.parser.get_current_comment())
+
+    def prev_comment(self):
+        self.parser.prev_comment()
+        self.check_comment()
         if not self.question_shown:
             self.comment_question_label.setText(self.parser.get_current_comment())
 

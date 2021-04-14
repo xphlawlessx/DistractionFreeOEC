@@ -12,6 +12,7 @@ class TabWidget(QTabWidget):
         self.owner = owner
         self.num_keys = (
             Qt.Key_0, Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9)
+        self.number = []
         colors = []
         for code in code_list:
             if code.color not in colors:
@@ -40,11 +41,8 @@ class TabWidget(QTabWidget):
             list.setAutoFillBackground(True)
             print(i)
             color = tuple(int(COLOR_INDEX[color_indexes[i]][j:j + 2], 16) for j in (2, 4, 6))
-            
+
             list.setStyleSheet("QWidget {{background-color: rgb{0};}}".format(color))
-            # palette = list.palette()
-            # palette.setColor(list.backgroundRole(), QColor(*colors[i]))
-            # list.setPalette(palette)
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key_Plus:
@@ -55,27 +53,43 @@ class TabWidget(QTabWidget):
         elif event.key() in self.num_keys:
             self.process_number_input(event.key())
         elif event.key() == Qt.Key_Enter:
-            self.save_comment()
-            self.owner.next_comment()
-            self.clear_codes()
+            if self.number:
+                self.enter_number()
+            else:
+                self.save_comment()
+                self.owner.next_comment()
+                self.clear_codes()
         elif event.key() == Qt.Key_Slash:
             self.owner.comment_or_question()
+        elif event.key() == Qt.Key_Backspace:
+            if self.number:
+                self.delete_number()
+            else:
+                self.clear_codes()
+                self.owner.prev_comment()
 
     def clear_codes(self):
         for i in range(self.count()):
-            # i = self.currentIndex()
             lv = self.list_views[i]
-            for key in self.num_keys:
-                index = lv.model().index(self.num_keys.index(key), 0)
+            for j in range(lv.count()):
+                index = lv.model().index(j, 0)
                 lv.selectionModel().select(index,
                                            QItemSelectionModel.Deselect | QItemSelectionModel.Rows)
 
     def process_number_input(self, key):
+        self.number.append(self.num_keys.index(key))
+
+    def enter_number(self):
         i = self.currentIndex()
         lv = self.list_views[i]
-        index = lv.model().index(self.num_keys.index(key), 0)
+        num = int(''.join([str(n) for n in self.number]))
+        index = lv.model().index(num, 0)
         lv.selectionModel().select(index,
                                    QItemSelectionModel.Toggle | QItemSelectionModel.Rows)
+        self.number = []
+
+    def delete_number(self):
+        self.number.pop()
 
     def save_comment(self):
         results = []
@@ -94,23 +108,13 @@ class ScrollLabel(QScrollArea):
         QScrollArea.__init__(self, *args, **kwargs)
 
         self.setWidgetResizable(True)
-
         content = QWidget(self)
         self.setWidget(content)
-
         lay = QVBoxLayout(content)
-
         self.label = QLabel(content)
-
         self.label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-
-        # making label multi-line
         self.label.setWordWrap(True)
-
-        # adding label to the layout
         lay.addWidget(self.label)
 
-    # the setText method
     def setText(self, text):
-        # setting text to the label
         self.label.setText(text)

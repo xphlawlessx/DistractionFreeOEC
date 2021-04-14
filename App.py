@@ -42,9 +42,8 @@ class MainView(QDialog):
 
     def check_comment(self):
         if self.parser.get_current_comment() in self.completed_comments.keys():
-            for x in self.completed_comments[self.parser.get_current_comment()]:
-                print(x)
-                # Todo show row data with self.tabs
+            self.tabs.display_loaded_data(self.completed_comments[self.parser.get_current_comment()])
+            # Todo show row data with self.tabs
 
     def next_comment(self):
         self.parser.next_comment()

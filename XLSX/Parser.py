@@ -38,26 +38,35 @@ class XLSXParser:
         self.comment_index = self.first_comment_index
         cell = self.first_comment_col + str(self.comment_index)
         val = self.sheet[cell].value
-        comment_count = sum([len(x) for x in completed_codes.values()])
+        print(completed_codes.values())
+        vals = [''.join(str(p[1]).split('-')[1:]).lstrip() for c in completed_codes.values() for p in c]
+        comment_count = len(vals)
+        print(comment_count)
         change_count = 0
 
         def get_cols() -> dict:
             col_count = 0
             cols = {}
+            # vals = [''.join(str(p[1]).split('-')[1:]).lstrip() for c in completed_codes.values() for p in c]
+            print(vals)
             for col in self.sheet.iter_cols():
                 for cell in col:
-                    for vals in completed_codes.values():
-                        if cell.value in vals:
-                            cols[cell.value] = ''.join(list(str(cell).split('.')[-1])[:-2])
-                            col_count += 1
-                            if col_count == comment_count:
-                                return cols
+                    if cell.value in vals:
+                        cols[cell.value] = ''.join(list(str(cell).split('.')[-1])[:-2])
+                        col_count += 1
+                        if col_count == comment_count:
+                            return cols
 
         cols = get_cols()
+        if not cols:
+            print('no cols')
+            return
+        print(cols.keys())
         while change_count < comment_count:
             if val in completed_codes.keys():
-                for num in completed_codes[val]:
-                    _cell = cols[num] + str(self.comment_index)
+                for code in completed_codes[val]:
+                    key_ = ''.join(str(code[1]).split('-')[1:]).lstrip()
+                    _cell = cols[key_] + str(self.comment_index)
                     self.sheet[_cell].value = 1.0
                     change_count += 1
             self.next_comment()

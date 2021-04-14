@@ -79,6 +79,14 @@ class TabWidget(QTabWidget):
     def process_number_input(self, key):
         self.number.append(self.num_keys.index(key))
 
+    def display_loaded_data(self, loaded_list):
+        for loaded in loaded_list:
+            print(loaded)
+            lv = self.list_views[loaded[0]]
+            index = lv.model().index(int(loaded[1].split('-')[0]), 0)
+            lv.selectionModel().select(index,
+                                       QItemSelectionModel.Select | QItemSelectionModel.Rows)
+
     def enter_number(self):
         i = self.currentIndex()
         lv = self.list_views[i]
@@ -96,7 +104,7 @@ class TabWidget(QTabWidget):
         for i in range(self.count()):
             lv = self.list_views[i]
             results.extend([
-                row.data() for row in
+                (i, row.data()) for row in
                 lv.selectionModel().selectedRows()])
         self.owner.completed_comments[self.owner.comment_question_label.label.text()] = results
 

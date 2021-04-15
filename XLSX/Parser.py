@@ -1,5 +1,6 @@
 from openpyxl import load_workbook
 from openpyxl.writer.excel import save_workbook
+from openpyxl.utils import column_index_from_string
 
 
 class Code():
@@ -23,8 +24,10 @@ class XLSXParser:
         self.question = ''
         self.question_cell = ''
         self.first_comment_col = ''
-        self.comment_index = 0
-        self.first_comment_index = 0
+        self.first_comment_index = 5
+        self.comment_index = 5
+        self.first_code_col = ''
+        self.old_data = []
 
     def get_sheet_names(self) -> list:
         if self.work_book is None:
@@ -38,17 +41,17 @@ class XLSXParser:
         self.comment_index = self.first_comment_index
         cell = self.first_comment_col + str(self.comment_index)
         val = self.sheet[cell].value
-        print(completed_codes.values())
+        # print(completed_codes.values())
         vals = [''.join(str(p[1]).split('-')[1:]).lstrip() for c in completed_codes.values() for p in c]
         comment_count = len(vals)
-        print(comment_count)
+        # print(comment_count)
         change_count = 0
 
         def get_cols() -> dict:
             col_count = 0
             cols = {}
             # vals = [''.join(str(p[1]).split('-')[1:]).lstrip() for c in completed_codes.values() for p in c]
-            print(vals)
+            # print(vals)
             for col in self.sheet.iter_cols():
                 for cell in col:
                     if cell.value in vals:
@@ -58,10 +61,7 @@ class XLSXParser:
                             return cols
 
         cols = get_cols()
-        if not cols:
-            print('no cols')
-            return
-        print(cols.keys())
+        # print(cols.keys())
         while change_count < comment_count:
             if val in completed_codes.keys():
                 for code in completed_codes[val]:
@@ -77,15 +77,37 @@ class XLSXParser:
     def get_codes(self, sheet_name):
         self.sheet = self.work_book[sheet_name]
         codes = []
-        for col in self.sheet.iter_cols(min_row=3, min_col=10, max_row=3):
+        for col in self.sheet.iter_cols(min_row=3, max_row=3, min_col=8):
             for cell in col:
                 if cell.value:
                     color_str = str(cell.fill).replace('<openpyxl.styles.fills.PatternFill object>', '').replace('\n',
                                                                                                                  '')
-                    if str(cell.value).lower().find('net:') < 0:
-                        codes.append(Code(cell.value, str(col).split('.')[-1].replace('>,)', ''), color_str))
+                    check_str = str(cell.value).lower()
+                    if check_str.find('net:') < 0 and check_str != 'count' and check_str.find(sheet_name.lower()) < 0:
+                        if self.first_code_col == '':
+                            self.first_code_col = column_index_from_string(
+                                str(col).split('.')[-1].replace('>,)', '')[0])
+
+                        codes.append(
+                            Code(cell.value, column_index_from_string(str(col).split('.')[-1].replace('>,)', '')[0]),
+                                 color_str))
         self.set_question(sheet_name)
         return codes
+
+    def parse_old_data(self):
+        print('----', column_index_from_string('T'))
+        for row in self.sheet.iter_rows(min_col=self.first_code_col, min_row=self.first_comment_index):
+            for cell in row:
+                if cell.value:
+                    print(cell.value)
+                    print('---')
+                    val = str(cell).split('.')[-1]
+                    print(val)
+                    self.old_data.append((column_index_from_string(val[0]) - self.first_code_col,
+                                          self.sheet[self.first_comment_col + val[1]].value,
+                                          int(val[1])))
+                    #  [(1, '0 - Environment - general / vague')
+                    print(self.old_data)
 
     def set_question(self, sheet_name):
         for col in self.sheet.iter_cols(max_col=10, max_row=10):
@@ -96,8 +118,9 @@ class XLSXParser:
                         self.question_cell = str(cell).split('.')[-1].replace('>', '')
                         splits = list(self.question_cell)
                         self.first_comment_col = ''.join(splits[:-1])
-                        self.comment_index = int(splits[-1]) + 1
-                        self.first_comment_index = self.comment_index
+                        print(self.first_comment_col)
+                        self.comment_index = self.first_comment_index
+                        print(self.first_comment_index)
 
     def get_current_comment(self):
         cell = self.first_comment_col + str(self.comment_index)

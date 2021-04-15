@@ -42,9 +42,16 @@ class MainView(QDialog):
             self.parser.question if self.question_shown else self.parser.get_current_comment())
 
     def check_comment(self):
+        print(self.completed_comments.keys())
         if self.parser.get_current_comment() in self.completed_comments.keys():
             self.tabs.display_loaded_data(self.completed_comments[self.parser.get_current_comment()])
             # Todo show row data with self.tabs
+
+    def set_first_comment(self):
+        self.parser.comment_index = self.parser.first_comment_index
+        self.check_comment()
+        if not self.question_shown:
+            self.comment_question_label.setText(self.parser.get_current_comment())
 
     def next_comment(self):
         self.parser.next_comment()
@@ -65,13 +72,14 @@ class MainView(QDialog):
         self.comment_question_label.setText('Click the folder button below to open a codeframe')
 
     def make_tabs(self, code_list):
+        self.parser.parse_old_data()
         self.tabs = TabWidget(code_list, self)
         self.tabs.setMinimumSize(400, 600)
         self.tabs.setMaximumSize(800, 1200)
         self.layout.addWidget(self.tabs, 0, 1, 1, 2)
         self.setLayout(self.layout)
         self.tabs.setFocus()
-        self.next_comment()
+        self.set_first_comment()
 
     def make_buttons(self):
         font_btn = QPushButton('font')

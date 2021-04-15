@@ -39,10 +39,10 @@ class TabWidget(QTabWidget):
                 list.addItem(item)
             self.addTab(list, str(i))
             list.setAutoFillBackground(True)
-            print(i)
             color = tuple(int(COLOR_INDEX[color_indexes[i]][j:j + 2], 16) for j in (2, 4, 6))
 
             list.setStyleSheet("QWidget {{background-color: rgb{0};}}".format(color))
+            self.convert_old_data()
             # todo load any completed rows 
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -80,13 +80,32 @@ class TabWidget(QTabWidget):
     def process_number_input(self, key):
         self.number.append(self.num_keys.index(key))
 
+    def convert_old_data(self):
+        for cell in self.owner.parser.old_data:
+            col = cell[0]
+            tab = 0
+            for lv in self.list_views:
+                if col > lv.count() - 1:
+                    col = lv.count() - col
+                    tab += 1
+            if cell[1] in self.owner.completed_comments.keys():
+                self.owner.completed_comments[cell[1]].extend([(tab, col)])
+            else:
+                self.owner.completed_comments[cell[1]] = [(tab, col)]
+
     def display_loaded_data(self, loaded_list):
         for loaded in loaded_list:
             print(loaded)
-            lv = self.list_views[loaded[0]]
-            index = lv.model().index(int(loaded[1].split('-')[0]), 0)
-            lv.selectionModel().select(index,
-                                       QItemSelectionModel.Select | QItemSelectionModel.Rows)
+            if isinstance(loaded[1], str):
+                lv = self.list_views[loaded[0]]
+                index = lv.model().index(int(loaded[1].split('-')[0]), 0)
+                lv.selectionModel().select(index,
+                                           QItemSelectionModel.Select | QItemSelectionModel.Rows)
+            else:
+                lv = self.list_views[loaded[0]]
+                index = lv.model().index(int(loaded[1]), 0)
+                lv.selectionModel().select(index,
+                                           QItemSelectionModel.Select | QItemSelectionModel.Rows)
 
     def enter_number(self):
         i = self.currentIndex()
@@ -109,6 +128,7 @@ class TabWidget(QTabWidget):
                 lv.selectionModel().selectedRows()])
         if results:
             self.owner.completed_comments[self.owner.comment_question_label.label.text()] = results
+            print(self.owner.completed_comments)
 
 
 # class for scrollable label

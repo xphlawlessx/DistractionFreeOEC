@@ -1,6 +1,6 @@
 import sys
 
-from PySide2.QtGui import QIcon, QFont
+from PySide2.QtGui import QIcon, QFont, Qt
 from PySide2.QtWidgets import *
 
 from Views.Modal import PickSheetPopup
@@ -31,10 +31,16 @@ class MainView(QDialog):
         bot_menu.addWidget(font_btn)
         bot_menu.addWidget(open_btn)
         bot_menu.addWidget(save_btn)
-        # todo add number label
+
+        self.number_label = QLabel('')
+        self.number_label.setFont(QFont('Source Code Pro', 16))
+        self.layout.addWidget(self.number_label, 1, 1)
 
         self.setLayout(self.layout)
         gb.setLayout(bot_menu)
+
+    def set_number_label(self, value):
+        self.number_label.setText(value)
 
     def comment_or_question(self):
         self.question_shown = not self.question_shown
@@ -42,7 +48,6 @@ class MainView(QDialog):
             self.parser.question if self.question_shown else self.parser.get_current_comment())
 
     def check_comment(self):
-        print(self.completed_comments.keys())
         if self.parser.get_current_comment() in self.completed_comments.keys():
             self.tabs.display_loaded_data(self.completed_comments[self.parser.get_current_comment()])
             # Todo show row data with self.tabs

@@ -37,22 +37,31 @@ class XLSXParser:
     def load_workbook(self, filename):
         self.work_book = load_workbook(filename, data_only=True)
 
+    def get_completed_code_values(self, completed_codes):
+
+        # vals = [''.join(str(p[1]).split('-')[1:]).lstrip() for c in completed_codes.values() for p in c]
+        vals = []
+        for c in completed_codes.values():
+            for p in c:
+                if str(p[1]).count('-') > 1:
+                    vals.append('-'.join(str(p[1]).split('-')[1:]).lstrip())
+                else:
+                    vals.append(''.join(str(p[1]).split('-')[1:]).lstrip())
+
+        return vals
+
     def save_workbook(self, filename: str, completed_codes: dict):
         self.comment_index = self.first_comment_index
         cell = self.first_comment_col + str(self.comment_index)
         val = self.sheet[cell].value
-        # print(completed_codes.values())
-        vals = [''.join(str(p[1]).split('-')[1:]).lstrip() for c in completed_codes.values() for p in c]
+        vals = self.get_completed_code_values(completed_codes)
         comment_count = len(vals)
-        # print(comment_count)
         change_count = 0
 
         def get_cols() -> dict:
             col_count = 0
             cols = {}
-            # vals = [''.join(str(p[1]).split('-')[1:]).lstrip() for c in completed_codes.values() for p in c]
-            # print(vals)
-            for col in self.sheet.iter_cols():
+            for col in self.sheet.iter_cols(min_row=3, max_row=3):
                 for cell in col:
                     if cell.value in vals:
                         cols[cell.value] = ''.join(list(str(cell).split('.')[-1])[:-2])
@@ -61,12 +70,10 @@ class XLSXParser:
                             return cols
 
         cols = get_cols()
-        # print(cols.keys())
         while change_count < comment_count:
             if val in completed_codes.keys():
-                for code in completed_codes[val]:
-                    key_ = ''.join(str(code[1]).split('-')[1:]).lstrip()
-                    _cell = cols[key_] + str(self.comment_index)
+                for key in vals:
+                    _cell = cols[key] + str(self.comment_index)
                     self.sheet[_cell].value = 1.0
                     change_count += 1
             self.next_comment()
@@ -95,19 +102,14 @@ class XLSXParser:
         return codes
 
     def parse_old_data(self):
-        print('----', column_index_from_string('T'))
         for row in self.sheet.iter_rows(min_col=self.first_code_col, min_row=self.first_comment_index):
             for cell in row:
                 if cell.value:
-                    print(cell.value)
-                    print('---')
                     val = str(cell).split('.')[-1]
-                    print(val)
                     self.old_data.append((column_index_from_string(val[0]) - self.first_code_col,
                                           self.sheet[self.first_comment_col + val[1]].value,
                                           int(val[1])))
                     #  [(1, '0 - Environment - general / vague')
-                    print(self.old_data)
 
     def set_question(self, sheet_name):
         for col in self.sheet.iter_cols(max_col=10, max_row=10):
@@ -118,9 +120,7 @@ class XLSXParser:
                         self.question_cell = str(cell).split('.')[-1].replace('>', '')
                         splits = list(self.question_cell)
                         self.first_comment_col = ''.join(splits[:-1])
-                        print(self.first_comment_col)
                         self.comment_index = self.first_comment_index
-                        print(self.first_comment_index)
 
     def get_current_comment(self):
         cell = self.first_comment_col + str(self.comment_index)

@@ -13,12 +13,10 @@ class PickSheetPopup(QDialog):
             if str(name).lower() == 'completed by':
                 continue
             b = QPushButton(name)
-            #print(name)
             b.clicked.connect(lambda n=name, o=owner: self.pick_sheet(n, o))
             layout.addWidget(b)
         self.setLayout(layout)
 
     def pick_sheet(self, name, owner):
         owner.sheet = name
-        #print(name)
         self.close()

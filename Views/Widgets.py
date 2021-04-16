@@ -7,8 +7,11 @@ from openpyxl.styles.colors import COLOR_INDEX
 
 
 class TabWidget(QTabWidget):
+
     def __init__(self, code_list, owner):
         QTabWidget.__init__(self)
+        self.CONFIRM = 'press enter again to confirm (backspace to cancel)'
+        self.is_confirming = False
         self.owner = owner
         self.num_keys = (
             Qt.Key_0, Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9)
@@ -45,6 +48,12 @@ class TabWidget(QTabWidget):
             self.convert_old_data()
             # todo load any completed rows 
 
+    def redraw_number(self):
+        self.owner.set_number_label(''.join([str(x) for x in self.number]))
+
+    def set_number_ask_confirm(self):
+        self.owner.set_number_label(self.CONFIRM)
+
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key_Plus:
             self.setCurrentIndex((self.currentIndex() + 1) % self.count())
@@ -57,17 +66,28 @@ class TabWidget(QTabWidget):
             if self.number:
                 self.enter_number()
             else:
-                self.save_comment()
-                self.owner.next_comment()
-                self.clear_codes()
+                if not self.is_confirming:
+                    self.set_number_ask_confirm()
+                    self.is_confirming = True
+                else:
+                    self.is_confirming = False
+                    self.number = []
+                    self.save_comment()
+                    self.owner.next_comment()
+                    self.clear_codes()
         elif event.key() == Qt.Key_Slash:
             self.owner.comment_or_question()
         elif event.key() == Qt.Key_Backspace:
-            if self.number:
-                self.delete_number()
+            if self.is_confirming:
+                self.is_confirming = False
             else:
-                self.clear_codes()
-                self.owner.prev_comment()
+                if self.number:
+                    self.delete_number()
+                else:
+                    self.clear_codes()
+                    self.owner.prev_comment()
+        if not self.is_confirming:
+            self.redraw_number()
 
     def clear_codes(self):
         for i in range(self.count()):
@@ -95,7 +115,6 @@ class TabWidget(QTabWidget):
 
     def display_loaded_data(self, loaded_list):
         for loaded in loaded_list:
-            print(loaded)
             if isinstance(loaded[1], str):
                 lv = self.list_views[loaded[0]]
                 index = lv.model().index(int(loaded[1].split('-')[0]), 0)
@@ -128,7 +147,6 @@ class TabWidget(QTabWidget):
                 lv.selectionModel().selectedRows()])
         if results:
             self.owner.completed_comments[self.owner.comment_question_label.label.text()] = results
-            print(self.owner.completed_comments)
 
 
 # class for scrollable label

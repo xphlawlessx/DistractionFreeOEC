@@ -1,6 +1,6 @@
 from openpyxl import load_workbook
-from openpyxl.writer.excel import save_workbook
 from openpyxl.utils import column_index_from_string
+from openpyxl.writer.excel import save_workbook
 
 
 class Code():
@@ -50,7 +50,7 @@ class XLSXParser:
 
         return vals
 
-    def save_workbook(self, filename: str, completed_codes: dict):
+    def save_workbook_to_xlsx(self, filename: str, completed_codes: dict):
         self.comment_index = self.first_comment_index
         cell = self.first_comment_col + str(self.comment_index)
         val = self.sheet[cell].value
@@ -64,21 +64,23 @@ class XLSXParser:
             for col in self.sheet.iter_cols(min_row=3, max_row=3):
                 for cell in col:
                     if cell.value in vals:
+                        print("col found")
                         cols[cell.value] = ''.join(list(str(cell).split('.')[-1])[:-2])
                         col_count += 1
                         if col_count == comment_count:
                             return cols
 
         cols = get_cols()
-        while change_count < comment_count:
-            if val in completed_codes.keys():
-                for key in vals:
-                    _cell = cols[key] + str(self.comment_index)
-                    self.sheet[_cell].value = 1.0
-                    change_count += 1
-            self.next_comment()
-            cell = self.first_comment_col + str(self.comment_index)
-            val = self.sheet[cell].value
+        if cols:
+            while change_count < comment_count:
+                if val in completed_codes.keys():
+                    for key in vals:
+                        _cell = cols[key] + str(self.comment_index)
+                        self.sheet[_cell].value = 1.0
+                        change_count += 1
+                self.next_comment()
+                cell = self.first_comment_col + str(self.comment_index)
+                val = self.sheet[cell].value
         save_workbook(self.work_book, filename)
 
     def get_codes(self, sheet_name):

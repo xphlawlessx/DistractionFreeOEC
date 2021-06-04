@@ -25,10 +25,10 @@ class TabWidget(QTabWidget):
         self.setTabBar(QTabBar())
         self.list_views = []
         for i in range(len(colors)):
-            list = QListWidget(self)
-            list.setSelectionMode(QAbstractItemView.ExtendedSelection)
-            list.setFont(QFont('Source Code Pro', 16))
-            self.list_views.append(list)
+            list_widget = QListWidget(self)
+            list_widget.setSelectionMode(QAbstractItemView.ExtendedSelection)
+            list_widget.setFont(QFont('Source Code Pro', 16))
+            self.list_views.append(list_widget)
             count = 0
             for code in code_list:
                 if code.color != colors[i]:
@@ -39,12 +39,12 @@ class TabWidget(QTabWidget):
                 item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
                 # Add the item to the model
                 # if list.count()
-                list.addItem(item)
-            self.addTab(list, str(i))
-            list.setAutoFillBackground(True)
+                list_widget.addItem(item)
+            self.addTab(list_widget, str(i))
+            list_widget.setAutoFillBackground(True)
             color = tuple(int(COLOR_INDEX[color_indexes[i]][j:j + 2], 16) for j in (2, 4, 6))
 
-            list.setStyleSheet("QWidget {{background-color: rgb{0};}}".format(color))
+            list_widget.setStyleSheet("QWidget {{background-color: rgb{0};}}".format(color))
             self.convert_old_data()
             # todo load any completed rows 
 

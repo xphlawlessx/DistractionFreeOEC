@@ -109,7 +109,7 @@ class MainView(QDialog):
             self.comment_question_label.setFont(font)
 
     def on_click_save(self):
-        self.parser.save_workbook(self.filename, self.completed_comments)
+        self.parser.save_workbook_to_xlsx(self.filename, self.completed_comments)
 
     def on_click_open(self):
         dlg = QFileDialog()

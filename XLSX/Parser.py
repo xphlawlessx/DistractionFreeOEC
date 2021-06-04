@@ -1,6 +1,7 @@
 from openpyxl import load_workbook
-from openpyxl.writer.excel import save_workbook
+from openpyxl.styles.colors import COLOR_INDEX
 from openpyxl.utils import column_index_from_string
+from openpyxl.writer.excel import save_workbook
 
 
 class Code():
@@ -89,6 +90,9 @@ class XLSXParser:
                 if cell.value:
                     color_str = str(cell.fill).replace('<openpyxl.styles.fills.PatternFill object>', '').replace('\n',
                                                                                                                  '')
+                    print(cell.fill.start_color)
+                    color_str = self.lookup_color(cell.fill.start_color)
+                    # TODO check !!
                     check_str = str(cell.value).lower()
                     if check_str.find('net:') < 0 and check_str != 'count' and check_str.find(sheet_name.lower()) < 0:
                         if self.first_code_col == '':
@@ -135,3 +139,28 @@ class XLSXParser:
     @staticmethod
     def clamp(n, smallest, largest):
         return max(smallest, min(n, largest))
+
+    @staticmethod
+    def lookup_color(color):
+        tint = 0
+        output = '#'
+
+        print("i: " + str(color.index))
+        if color.type == 'indexed':
+            index = int(color.index)
+            if 0 <= index < len(COLOR_INDEX):
+                # coloring by pre-set color codes
+                output += COLOR_INDEX[index]
+
+        elif color.type == 'rgb' and 0 < len(color.rgb):
+            # // coloring by RGB value ("FFRRGGBB")
+            output += color.rgb
+        else:
+            # // coloring by shades of grey (-1 -> 0)
+            tint = (int(color.tint * 160) + 0x80)
+            tinted = str(hex(int(color.tint * -512)))
+            output += ("FF" + tinted).replace("-", '')
+        print("output: " + str(output))
+        
+        # TODO USE COLORS
+        return output

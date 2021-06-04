@@ -3,7 +3,6 @@ from PySide2.QtGui import QKeyEvent, QFont, Qt
 from PySide2.QtWidgets import QTabWidget, QTabBar, QListWidget, QAbstractItemView, QListWidgetItem, QScrollArea, \
     QWidget, \
     QVBoxLayout, QLabel
-from openpyxl.styles.colors import COLOR_INDEX
 
 
 class TabWidget(QTabWidget):
@@ -20,11 +19,12 @@ class TabWidget(QTabWidget):
         for code in code_list:
             if code.color not in colors:
                 colors.append(code.color)
-        color_indexes = [15, 19, 22, 24, 26, 27, 45, 46, 47, 41, 42, 43, 44, 55, 56, 57]
+
         self.setAutoFillBackground(True)
         self.setTabBar(QTabBar())
         self.list_views = []
         for i in range(len(colors)):
+            print(colors[i])
             list_widget = QListWidget(self)
             list_widget.setSelectionMode(QAbstractItemView.ExtendedSelection)
             list_widget.setFont(QFont('Source Code Pro', 16))
@@ -42,9 +42,7 @@ class TabWidget(QTabWidget):
                 list_widget.addItem(item)
             self.addTab(list_widget, str(i))
             list_widget.setAutoFillBackground(True)
-            color = tuple(int(COLOR_INDEX[color_indexes[i]][j:j + 2], 16) for j in (2, 4, 6))
-
-            list_widget.setStyleSheet("QWidget {{background-color: rgb{0};}}".format(color))
+            list_widget.setStyleSheet("QWidget {{background-color: {0};}}".format(colors[i]))
             self.convert_old_data()
             # todo load any completed rows 
 

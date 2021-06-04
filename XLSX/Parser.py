@@ -158,9 +158,9 @@ class XLSXParser:
         else:
             # // coloring by shades of grey (-1 -> 0)
             tint = (int(color.tint * 160) + 0x80)
-            tinted = str(hex(int(color.tint * -512)))
+            tinted = str(format(int(tint * -512), 'x'))
             output += ("FF" + tinted).replace("-", '')
         print("output: " + str(output))
-        
+
         # TODO USE COLORS
         return output
